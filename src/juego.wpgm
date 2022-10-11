@@ -1,8 +1,55 @@
 import wollok.game.*
-import pepita.*
+
+class Objective{
+	var property position
+	
+	method randomize(){
+		const x = 0.randomUpTo(game.width()).truncate(0)
+		const y = 0.randomUpTo(game.height()).truncate(0)
+		position = game.at(x, y)
+	}
+}
+
+const basicTarget = new Objective()
+
+object crosshair{
+	var property position = game.at(0,0)
+	
+	var property score
+	
+	method image() = "crosshair.png"
+	
+	method score(newScore){
+		score = newScore
+		
+		if(score < 0){score = 0}
+	}
+	
+	method move(newPos) = self.position(newPos)
+}
 
 program juego {
-	game.title("Juego Base")
-	game.addVisual(pepita)
+	game.title("Project")
+	game.width(4)
+	game.height(4)
+	
+	// Visual
+	
+	game.addVisual(crosshair)
+	
+	
+	// Input
+	
+	keyboard.right().onPressDo{crosshair.move(crosshair.position().right(1))}
+	keyboard.left().onPressDo{crosshair.move(crosshair.position().left(1))}
+	keyboard.up().onPressDo{crosshair.move(crosshair.position().up(1))}
+	keyboard.down().onPressDo{crosshair.move(crosshair.position().down(1))}
+	
+	
+	
+	
+	
+	// Start
+	
 	game.start()
 }
