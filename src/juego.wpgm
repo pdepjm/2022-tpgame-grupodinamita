@@ -1,41 +1,34 @@
 import wollok.game.*
+import crosshair.*
+import objective.*
+import timer.*
+import notify.*
 
-class Objective{
-	var property position
-	
-	method randomize(){
-		const x = 0.randomUpTo(game.width()).truncate(0)
-		const y = 0.randomUpTo(game.height()).truncate(0)
-		position = game.at(x, y)
-	}
-}
+const x = 0.randomUpTo(game.width()).truncate(0)
+const y = 0.randomUpTo(game.height()).truncate(0)
+const target = new Objective(position = game.at(x, y))
+const news = new Notification(position = game.at(0, 0))
 
-const basicTarget = new Objective()
-
-object crosshair{
-	var property position = game.at(0,0)
-	
-	var property score
-	
-	method image() = "crosshair.png"
-	
-	method score(newScore){
-		score = newScore
-		
-		if(score < 0){score = 0}
-	}
-	
-	method move(newPos) = self.position(newPos)
+object counter{
+	method position() = game.at(game.width()/2, 0)
+	method text() = "Puntaje: " + crosshair.score() + ". Tiempo: " + timer.seconds() + "."
 }
 
 program juego {
 	game.title("Project")
-	game.width(4)
-	game.height(4)
+	game.cellSize(44)
+	game.width(6)
+	game.height(6)
+	
+	timer.initiate()
+	
 	
 	// Visual
 	
+	game.addVisual(target)
 	game.addVisual(crosshair)
+	game.addVisual(news)
+	game.addVisual(counter)
 	
 	
 	// Input
@@ -45,10 +38,25 @@ program juego {
 	keyboard.up().onPressDo{crosshair.move(crosshair.position().up(1))}
 	keyboard.down().onPressDo{crosshair.move(crosshair.position().down(1))}
 	
+	keyboard.enter().onPressDo{
+		if(game.colliders(crosshair).contains(target)){
+			crosshair.justScored(target.scoreWorth())
+			target.randomize(0.randomUpTo(game.width()).truncate(0), 0.randomUpTo(game.height()).truncate(0))
+		}
+	}
 	
+	game.onTick(1, "Reduction", {target.reduceWorth()})
 	
-	
-	
+	game.onTick(1, "Game Over", {
+		if(timer.outOfTime()){
+			game.removeVisual(target)
+			timer.finish()
+			game.say(crosshair, "Your time has run out. Final score: " + crosshair.score())
+			game.removeVisual(counter)
+		}
+	})
+
+
 	// Start
 	
 	game.start()
