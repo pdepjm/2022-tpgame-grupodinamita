@@ -1,63 +1,98 @@
 import wollok.game.*
 import crosshair.*
-import objective.*
-import timer.*
-import notify.*
+import target.*
 
-const x = 0.randomUpTo(game.width()).truncate(0)
-const y = 0.randomUpTo(game.height()).truncate(0)
-const target = new Objective(position = game.at(x, y))
-const news = new Notification(position = game.at(0, 0))
 
-object counter{
-	method position() = game.at(game.width()/2, 0)
-	method text() = "Puntaje: " + crosshair.score() + ". Tiempo: " + timer.seconds() + "."
+class Dot{
+	var property image = "dot.png"
 }
 
-program juego {
-	game.title("Project")
+
+
+object limitedTime_dot inherits Dot{
+	method position() = game.at(2, 6)
+	
+	method text() = "Limited time."
+	
+	method hit(){
+		game.removeVisual(self)
+		limitedTime.initiate()
+	}
+}
+
+object starter_dot inherits Dot{
+	method position() = game.at(game.width()/2, 7)
+	
+	method text() = "Press here to begin."
+	
+	method hit(){
+		game.removeVisual(self)
+		game.removeVisual(quitting_dot)
+		game.addVisual(limitedTime_dot)
+	}
+}
+
+object quitting_dot inherits Dot{
+	method position() = game.at(game.width()/2, 5)
+	
+	method text() = "Press here to quit."
+	
+	method hit(){
+		game.stop()
+	}
+}
+
+object limitedTime{
+	var timer = 10
+	
+	method timeLoss(){
+		timer -= 1
+	}
+	
+	method initiate(){
+		game.onTick(1000, "Timer", {
+			self.timeLoss()
+			if(timer < 0){
+				self.finish()
+			}
+		})
+		
+		game.onTick(2000, "Spawning", {
+			game.addVisual(new Target_Green(position = game.at(0.randomUpTo(game.width()).truncate(0), 0.randomUpTo(game.height()).truncate(0))))
+		})
+	}
+	
+	method finish(){
+		game.removeTickEvent("Timer")
+		game.removeTickEvent("Spawning")
+		game.addVisual(starter_dot)
+		game.addVisual(quitting_dot)
+	}
+}
+
+object menu{
+	method open(){
+		
+	}
+}
+
+program juego{
+	game.title("Totally Normal Crosshair Shooter")
 	game.cellSize(44)
-	game.width(6)
-	game.height(6)
+	game.width(9)
+	game.height(9)
 	
-	timer.initiate()
-	
-	
-	// Visual
-	
-	game.addVisual(target)
 	game.addVisual(crosshair)
-	game.addVisual(news)
-	game.addVisual(counter)
-	
-	
-	// Input
-	
+	game.addVisual(starter_dot)
+	game.addVisual(quitting_dot)
+
 	keyboard.right().onPressDo{crosshair.move(crosshair.position().right(1))}
 	keyboard.left().onPressDo{crosshair.move(crosshair.position().left(1))}
 	keyboard.up().onPressDo{crosshair.move(crosshair.position().up(1))}
 	keyboard.down().onPressDo{crosshair.move(crosshair.position().down(1))}
+	keyboard.enter().onPressDo{crosshair.shoot()}
 	
-	keyboard.enter().onPressDo{
-		if(game.colliders(crosshair).contains(target)){
-			crosshair.justScored(target.scoreWorth())
-			target.randomize(0.randomUpTo(game.width()).truncate(0), 0.randomUpTo(game.height()).truncate(0))
-		}
-	}
-	
-	game.onTick(1, "Reduction", {target.reduceWorth()})
-	
-	game.onTick(1, "Game Over", {
-		if(timer.outOfTime()){
-			game.removeVisual(target)
-			timer.finish()
-			game.say(crosshair, "Your time has run out. Final score: " + crosshair.score())
-			game.removeVisual(counter)
-		}
-	})
-
-
-	// Start
+	menu.open()
 	
 	game.start()
 }

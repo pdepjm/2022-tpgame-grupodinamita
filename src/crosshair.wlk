@@ -7,20 +7,11 @@ object crosshair{
 	
 	method image() = "crosshair.png"
 	
-	method score(newScore){
-		score = newScore
-		
-		if(score < 0){score = 0}
-	}
-	
-	method scoreDisplay(){
-		game.say(self, "Current score: " + score + ".")
-	}
-	
-	method justScored(additionalScore){
-		self.score(self.score() + additionalScore)
-		self.scoreDisplay()
-	}	
-	
 	method move(newPos) = self.position(newPos)
+	
+	method shoot(){
+		if(game.colliders(self) != []){
+			game.uniqueCollider(self).hit()
+		}
+	}
 }
