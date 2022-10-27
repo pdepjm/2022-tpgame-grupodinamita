@@ -1,0 +1,19 @@
+import wollok.game.*
+import crosshair.*
+import target.*
+import buttons.*
+import gamemode.*
+import UI.*
+import menu.*
+
+program juego{
+	game.title("Totally Normal Crosshair Shooter")
+	game.cellSize(44)
+	game.width(9)
+	game.height(9)
+	game.boardGround("White Background.jpg")
+	
+	menu.gameInit()
+	
+	game.start()
+}
