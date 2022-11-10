@@ -1,4 +1,4 @@
-# Normal Crosshair Shooter
+# Totally Normal Crosshair Shooter
 
 ## Equipo de desarrollo
 
